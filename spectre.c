@@ -17,16 +17,13 @@ uint8_t sensor_array[256 * STRIDE];
 uint8_t secret_data[] = "supersegreto";
 
 
-void funzione_dummy(size_t x) {
-    (void)x; // non fa nulla
-}
 
 void __attribute__((aligned(4096))) funzione_training(size_t x) { (void)x; }
 
 void __attribute__((aligned(4096))) funzione_vittima(size_t x) {
     uint8_t value = secret_data[x];
     volatile uint8_t *addr = &sensor_array[value * STRIDE];
-    volatile uint8_t junk = *addr; // 'volatile' per evitare che il compilatore la elimini
+    volatile uint8_t junk = *addr; 
     (void)junk;
 }
 
@@ -59,7 +56,7 @@ int main() {
 
     // --- PREPARAZIONE CATENA DI PUNTATORI ---
     struct node n1, n2, n3;
-    // La catena punta alla funzione sicura (training)
+
     n1.next = &n2;
     n2.next = &n3;
     n3.next = (struct node *)funzione_training;
