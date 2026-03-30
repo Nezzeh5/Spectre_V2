@@ -56,7 +56,6 @@ int main() {
 
     // --- PREPARAZIONE CATENA DI PUNTATORI ---
     struct node n1, n2, n3;
-
     n1.next = &n2;
     n2.next = &n3;
     n3.next = (struct node *)funzione_training;
@@ -83,6 +82,7 @@ int main() {
             _mm_mfence();
 
             // 4. ATTACCO SPECULATIVO
+            struct node *p = &n1;
             p = p->next; 
             p = p->next; 
             
