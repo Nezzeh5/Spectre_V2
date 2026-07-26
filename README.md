@@ -1,4 +1,4 @@
-# Spectre v2 (BTB Injection) — Proof of Concept
+# Spectre v2 (BTB Injection) - Proof of Concept
 
 Proof of Concept didattica che dimostra l'attacco **Spectre v2 (Branch Target Injection)**, sfruttando l'esecuzione speculativa e un canale laterale basato sulla cache (Flush+Reload) per estrarre dati sensibili dalla memoria di processo.
 
@@ -6,7 +6,7 @@ Realizzata nell'ambito di attività di ricerca su vulnerabilità microarchitettu
 
 ## Contesto
 
-Le CPU moderne utilizzano predittori di branch per anticipare il target dei salti indiretti, eseguendo speculativamente le istruzioni successive prima di conoscere il target reale. Se la predizione è errata, le istruzioni eseguite speculativamente vengono annullate — ma i loro effetti collaterali sulla cache **non vengono ripristinati**. Questo PoC dimostra come tali effetti possano essere osservati per ricostruire dati che non dovrebbero essere accessibili.
+Le CPU moderne utilizzano predittori di branch per anticipare il target dei salti indiretti, eseguendo speculativamente le istruzioni successive prima di conoscere il target reale. Se la predizione è errata, le istruzioni eseguite speculativamente vengono annullate, ma i loro effetti collaterali sulla cache **non vengono ripristinati**. Questo PoC dimostra come tali effetti possano essere osservati per ricostruire dati che non dovrebbero essere accessibili.
 
 ## Come funziona
 
@@ -25,7 +25,7 @@ Il flusso dell'attacco si articola in cinque fasi, ripetute per ogni byte del se
    La CPU attraversa la catena di puntatori; poiché i nodi non sono in cache, il processore specula sul branch predetto in fase di training e **esegue speculativamente** `funzione_vittima` con l'indice del byte segreto come argomento, prima ancora di aver risolto il puntatore reale. Durante questa finestra speculativa, il valore segreto viene usato per indicizzare `sensor_array`, portando in cache la pagina corrispondente al suo valore.
 
 5. **Reload (canale laterale)**
-   Per ciascuno dei 256 possibili valori di byte, si misura il tempo di accesso alla pagina corrispondente in `sensor_array` tramite `__rdtscp`. Un tempo sotto la soglia calibrata indica un *cache hit*, ovvero che quella pagina è stata toccata durante l'esecuzione speculativa — rivelando il valore del byte segreto.
+   Per ciascuno dei 256 possibili valori di byte, si misura il tempo di accesso alla pagina corrispondente in `sensor_array` tramite `__rdtscp`. Un tempo sotto la soglia calibrata indica un *cache hit*, ovvero che quella pagina è stata toccata durante l'esecuzione speculativa, rivelando il valore del byte segreto.
 
 Il processo viene ripetuto per `ATTACK_REPS` iterazioni per ogni posizione, accumulando uno *score* per ciascun valore candidato; il valore con lo score più alto viene considerato quello corretto.
 
@@ -42,8 +42,8 @@ Il processo viene ripetuto per `ATTACK_REPS` iterazioni per ogni posizione, accu
 ## Compilazione ed esecuzione
 
 ```bash
-gcc -O0 -march=native poc_spectre_v2.c -o poc_spectre_v2
-./poc_spectre_v2
+gcc -O0 -march=native poc_spectre_v2.c -o spectre
+./spectre
 ```
 
 **Requisiti**: CPU x86 con supporto a `RDTSCP` e `CLFLUSH` (`x86intrin.h`).
@@ -64,8 +64,3 @@ Pos 1: 'u' (Score: ...)
 ## Finalità e limitazioni
 
 Questo codice è stato sviluppato **esclusivamente a scopo didattico e di ricerca**, per analizzare e documentare la classe di vulnerabilità Spectre v2 nell'ambito di un percorso accademico in sicurezza informatica. Non è pensato per l'uso contro sistemi di terzi senza autorizzazione esplicita.
-
-## Riferimenti
-
-- Kocher et al., *Spectre Attacks: Exploiting Speculative Execution*, 2019
-- Documentazione Intel su mitigazioni Spectre (IBRS/IBPB, retpoline)
